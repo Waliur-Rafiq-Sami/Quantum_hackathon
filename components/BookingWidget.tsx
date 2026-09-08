@@ -22,9 +22,9 @@ import {
   Upload,
   X,
   Image as ImageIcon,
+  Loader2,
 } from "lucide-react";
 
-// --- Types ---
 export interface Provider {
   id: string;
   name: string;
@@ -38,7 +38,8 @@ export interface Provider {
 }
 
 export interface ServiceRequest {
-  id: string;
+  id?: string;
+  _id?: string;
   serviceName: string;
   location: string;
   date: string;
@@ -50,7 +51,7 @@ export interface ServiceRequest {
   images: string[];
   provider: Provider;
   status: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 interface TimeSlotOption {
@@ -107,7 +108,6 @@ const TIME_SLOTS: TimeSlotOption[] = [
   },
 ];
 
-// --- Sub-Component: Modern Popover Time Picker ---
 function CustomTimePicker({
   selectedSlot,
   onChangeSlot,
@@ -139,7 +139,6 @@ function CustomTimePicker({
         Arrival Window
       </label>
 
-      {/* Trigger Button */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -154,13 +153,10 @@ function CustomTimePicker({
           {selectedSlot || "Select Time Window"}
         </span>
         <ChevronDown
-          className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
-            isOpen ? "rotate-180 text-blue-400" : ""
-          }`}
+          className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isOpen ? "rotate-180 text-blue-400" : ""}`}
         />
       </button>
 
-      {/* Dropdown Popover */}
       {isOpen && (
         <div className="absolute z-50 left-0 right-0 mt-2 p-3 bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-2xl shadow-2xl shadow-black/80 animate-in fade-in zoom-in-95 duration-150">
           <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
@@ -181,7 +177,6 @@ function CustomTimePicker({
               {TIME_SLOTS.map((slot) => {
                 const Icon = slot.icon;
                 const isSelected = selectedSlot === slot.label;
-
                 return (
                   <button
                     key={slot.id}
@@ -198,11 +193,7 @@ function CustomTimePicker({
                   >
                     <div className="flex items-center gap-2.5">
                       <div
-                        className={`w-6 h-6 rounded-md flex items-center justify-center ${
-                          isSelected
-                            ? "bg-blue-500/20 text-blue-400"
-                            : "bg-slate-800 text-slate-400"
-                        }`}
+                        className={`w-6 h-6 rounded-md flex items-center justify-center ${isSelected ? "bg-blue-500/20 text-blue-400" : "bg-slate-800 text-slate-400"}`}
                       >
                         <Icon className="w-3.5 h-3.5" />
                       </div>
@@ -241,7 +232,6 @@ function CustomTimePicker({
   );
 }
 
-// --- Main Widget Component ---
 export default function BookingWidget({
   providers = [],
   onConfirmBooking,
@@ -259,8 +249,10 @@ export default function BookingWidget({
     "AC unit blowing warm air, needs gas check.",
   );
   const [images, setImages] = useState<string[]>([]);
+
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const topProvider = providers[0] || {
     id: "PROV-101",
@@ -275,12 +267,19 @@ export default function BookingWidget({
       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
   };
 
-  // Image upload handler
+  // Convert uploaded image files to Base64 strings for DB persistence
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
-      const newImageUrls = filesArray.map((file) => URL.createObjectURL(file));
-      setImages((prev) => [...prev, ...newImageUrls]);
+      filesArray.forEach((file) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (reader.result) {
+            setImages((prev) => [...prev, reader.result as string]);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
     }
   };
 
@@ -297,10 +296,17 @@ export default function BookingWidget({
     }, 500);
   };
 
-  const handleLockBooking = () => {
+  // POST Request to Database API
+  const handleLockBooking = async () => {
     if (!topProvider) return;
-    const newReq: ServiceRequest = {
-      id: `REQ-${Math.floor(1000 + Math.random() * 9000)}`,
+    if (!customerName || !contactPhone) {
+      alert("Please fill in your name and contact phone number.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const payload = {
       serviceName: selectedService,
       customerName,
       contactPhone,
@@ -311,10 +317,28 @@ export default function BookingWidget({
       problemDetails,
       images,
       provider: topProvider,
-      status: "Requested",
-      createdAt: new Date().toLocaleTimeString(),
     };
-    onConfirmBooking(newReq);
+
+    try {
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const resData = await response.json();
+
+      if (resData.success) {
+        onConfirmBooking(resData.data);
+      } else {
+        alert(`Error: ${resData.error || "Failed to submit request"}`);
+      }
+    } catch (err) {
+      console.error("Submission failed:", err);
+      alert("Failed to submit request. Check console for details.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -334,7 +358,7 @@ export default function BookingWidget({
             </div>
             {urgency === "Urgent" && (
               <span className="px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold flex items-center gap-2 shadow-sm shadow-red-500/10">
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />{" "}
                 Emergency Priority (+৳200)
               </span>
             )}
@@ -345,7 +369,6 @@ export default function BookingWidget({
             onSubmit={handleSearch}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-6"
           >
-            {/* Contact Name Field */}
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
                 <User className="w-3.5 h-3.5 text-blue-400" /> Full Name
@@ -363,7 +386,6 @@ export default function BookingWidget({
               </div>
             </div>
 
-            {/* Phone Number Field */}
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
                 <Phone className="w-3.5 h-3.5 text-blue-400" /> Phone Number
@@ -381,7 +403,6 @@ export default function BookingWidget({
               </div>
             </div>
 
-            {/* Service Category Field */}
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
                 <Wrench className="w-3.5 h-3.5 text-blue-400" /> Category
@@ -408,7 +429,6 @@ export default function BookingWidget({
               </select>
             </div>
 
-            {/* Location Field */}
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-blue-400" /> Location
@@ -424,7 +444,6 @@ export default function BookingWidget({
               </div>
             </div>
 
-            {/* Urgency Dispatch Field */}
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
                 <Zap className="w-3.5 h-3.5 text-blue-400" /> Dispatch Type
@@ -455,7 +474,6 @@ export default function BookingWidget({
               </div>
             </div>
 
-            {/* Date Picker */}
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-blue-400" /> Scheduled
@@ -469,13 +487,11 @@ export default function BookingWidget({
               />
             </div>
 
-            {/* Popover Time Selector */}
             <CustomTimePicker
               selectedSlot={timeSlot}
               onChangeSlot={setTimeSlot}
             />
 
-            {/* Problem Details Field */}
             <div className="md:col-span-2">
               <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5 text-blue-400" /> Issue
@@ -490,7 +506,6 @@ export default function BookingWidget({
               />
             </div>
 
-            {/* Multi-Image Upload Section (Optional) */}
             <div className="md:col-span-2 lg:col-span-3">
               <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
                 <ImageIcon className="w-3.5 h-3.5 text-blue-400" /> Attach
@@ -499,7 +514,6 @@ export default function BookingWidget({
               </label>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-                {/* Upload Button */}
                 <label className="flex flex-col items-center justify-center h-20 border-2 border-dashed border-slate-800 hover:border-blue-500/50 hover:bg-blue-500/5 rounded-xl cursor-pointer transition-all text-slate-400 hover:text-blue-400">
                   <Upload className="w-5 h-5 mb-1" />
                   <span className="text-[10px] font-semibold">
@@ -514,7 +528,6 @@ export default function BookingWidget({
                   />
                 </label>
 
-                {/* Image Previews */}
                 {images.map((imgSrc, idx) => (
                   <div
                     key={idx}
@@ -538,7 +551,6 @@ export default function BookingWidget({
               </div>
             </div>
 
-            {/* Submit Button */}
             <div className="md:col-span-2 lg:col-span-3 pt-2">
               <button
                 type="submit"
@@ -609,9 +621,18 @@ export default function BookingWidget({
                   </div>
                   <button
                     onClick={handleLockBooking}
-                    className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20 active:scale-95"
+                    disabled={isSubmitting}
+                    className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20 active:scale-95 disabled:opacity-50"
                   >
-                    <Check className="w-4 h-4" /> Confirm & Lock Slot
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" /> Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-4 h-4" /> Confirm & Lock Slot
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

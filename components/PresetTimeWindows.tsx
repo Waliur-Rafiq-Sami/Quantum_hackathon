@@ -1,133 +1,3 @@
-// import React, { useState } from "react";
-// import { Clock, Sunrise, Sun, Sunset, Moon, Check } from "lucide-react";
-
-// interface TimeSlotOption {
-//   id: string;
-//   label: string;
-//   period: "Morning" | "Afternoon" | "Evening";
-//   icon: React.ElementType;
-//   tag?: string;
-// }
-
-// const TIME_SLOTS: TimeSlotOption[] = [
-//   {
-//     id: "slot-1",
-//     label: "09:00 AM - 11:00 AM",
-//     period: "Morning",
-//     icon: Sunrise,
-//     tag: "Fastest",
-//   },
-//   { id: "slot-2", label: "11:00 AM - 01:00 PM", period: "Morning", icon: Sun },
-//   {
-//     id: "slot-3",
-//     label: "02:00 PM - 04:00 PM",
-//     period: "Afternoon",
-//     icon: Sun,
-//     tag: "Popular",
-//   },
-//   {
-//     id: "slot-4",
-//     label: "04:00 PM - 06:00 PM",
-//     period: "Evening",
-//     icon: Sunset,
-//   },
-//   { id: "slot-5", label: "06:00 PM - 08:00 PM", period: "Evening", icon: Moon },
-// ];
-
-// export default function PreferredTimePicker({
-//   timeSlot,
-//   setTimeSlot,
-// }: {
-//   timeSlot: string;
-//   setTimeSlot: (slot: string) => void;
-// }) {
-//   const [isCustom, setIsCustom] = useState(false);
-
-//   return (
-//     <div className="space-y-3">
-//       {/* Label and Mode Switcher */}
-//       <div className="flex items-center justify-between">
-//         <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5 font-mono">
-//           <Clock className="w-3.5 h-3.5 text-blue-400" />
-//           Preferred Arrival Window
-//         </label>
-//         <button
-//           type="button"
-//           onClick={() => setIsCustom(!isCustom)}
-//           className="text-[11px] text-blue-400 hover:text-blue-300 font-medium transition-colors"
-//         >
-//           {isCustom ? "Select standard slot" : "Set custom time"}
-//         </button>
-//       </div>
-
-//       {!isCustom ? (
-//         /* Preset Time Slot Grid */
-//         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-//           {TIME_SLOTS.map((slot) => {
-//             const Icon = slot.icon;
-//             const isSelected = timeSlot === slot.label;
-
-//             return (
-//               <button
-//                 key={slot.id}
-//                 type="button"
-//                 onClick={() => setTimeSlot(slot.label)}
-//                 className={`relative flex items-center justify-between p-2.5 rounded-xl border text-xs transition-all ${
-//                   isSelected
-//                     ? "bg-blue-950/60 border-blue-500 text-white shadow-sm shadow-blue-500/20 ring-1 ring-blue-500/40"
-//                     : "bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-900/60"
-//                 }`}
-//               >
-//                 <div className="flex items-center gap-2.5">
-//                   <div
-//                     className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-//                       isSelected
-//                         ? "bg-blue-500/20 text-blue-400"
-//                         : "bg-slate-900 text-slate-500"
-//                     }`}
-//                   >
-//                     <Icon className="w-3.5 h-3.5" />
-//                   </div>
-//                   <div className="text-left">
-//                     <span className="font-mono font-medium block leading-none">
-//                       {slot.label}
-//                     </span>
-//                     <span className="text-[10px] text-slate-500">
-//                       {slot.period}
-//                     </span>
-//                   </div>
-//                 </div>
-
-//                 <div className="flex items-center gap-1.5">
-//                   {slot.tag && !isSelected && (
-//                     <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
-//                       {slot.tag}
-//                     </span>
-//                   )}
-//                   {isSelected && (
-//                     <Check className="w-4 h-4 text-blue-400 stroke-[3]" />
-//                   )}
-//                 </div>
-//               </button>
-//             );
-//           })}
-//         </div>
-//       ) : (
-//         /* Native Time Input Fallback */
-//         <div className="relative">
-//           <input
-//             type="time"
-//             value={timeSlot}
-//             onChange={(e) => setTimeSlot(e.target.value)}
-//             className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
-//           />
-//           <Clock className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
-
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -175,7 +45,7 @@ export interface ServiceRequest {
   createdAt: string;
 }
 
-interface TimeSlotOption {
+export interface TimeSlotOption {
   id: string;
   label: string;
   period: "Morning" | "Afternoon" | "Evening";
@@ -184,6 +54,18 @@ interface TimeSlotOption {
   available?: boolean;
 }
 
+// Unified Props Interface for Time Picker Components
+export interface TimePickerProps {
+  timeSlot: string;
+  setTimeSlot: (slot: string) => void;
+}
+
+export interface BookingWidgetProps {
+  providers?: Provider[];
+  onConfirmBooking: (req: ServiceRequest) => void;
+}
+
+// Shared Time Slot Presets
 const TIME_SLOTS: TimeSlotOption[] = [
   {
     id: "1",
@@ -224,14 +106,102 @@ const TIME_SLOTS: TimeSlotOption[] = [
   },
 ];
 
-// --- Sub-Component: Modern Popover Time Picker ---
-function CustomTimePicker({
-  selectedSlot,
-  onChangeSlot,
-}: {
-  selectedSlot: string;
-  onChangeSlot: (slot: string) => void;
-}) {
+// --- Sub-Component 1: Grid-style Preferred Time Picker ---
+export function PreferredTimePicker({
+  timeSlot,
+  setTimeSlot,
+}: TimePickerProps) {
+  const [isCustom, setIsCustom] = useState(false);
+
+  return (
+    <div className="space-y-3">
+      {/* Label and Mode Switcher */}
+      <div className="flex items-center justify-between">
+        <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5 font-mono">
+          <Clock className="w-3.5 h-3.5 text-blue-400" />
+          Preferred Arrival Window
+        </label>
+        <button
+          type="button"
+          onClick={() => setIsCustom(!isCustom)}
+          className="text-[11px] text-blue-400 hover:text-blue-300 font-medium transition-colors"
+        >
+          {isCustom ? "Select standard slot" : "Set custom time"}
+        </button>
+      </div>
+
+      {!isCustom ? (
+        /* Preset Time Slot Grid */
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {TIME_SLOTS.map((slot) => {
+            const Icon = slot.icon;
+            const isSelected = timeSlot === slot.label;
+
+            return (
+              <button
+                key={slot.id}
+                type="button"
+                onClick={() => setTimeSlot(slot.label)}
+                className={`relative flex items-center justify-between p-2.5 rounded-xl border text-xs transition-all ${
+                  isSelected
+                    ? "bg-blue-950/60 border-blue-500 text-white shadow-sm shadow-blue-500/20 ring-1 ring-blue-500/40"
+                    : "bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-900/60"
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <div
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                      isSelected
+                        ? "bg-blue-500/20 text-blue-400"
+                        : "bg-slate-900 text-slate-500"
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="text-left">
+                    <span className="font-mono font-medium block leading-none">
+                      {slot.label}
+                    </span>
+                    <span className="text-[10px] text-slate-500">
+                      {slot.period}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  {slot.tag && !isSelected && (
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                      {slot.tag}
+                    </span>
+                  )}
+                  {isSelected && (
+                    <Check className="w-4 h-4 text-blue-400 stroke-[3]" />
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        /* Native Time Input Fallback */
+        <div className="relative">
+          <input
+            type="time"
+            value={
+              timeSlot.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/) ? timeSlot : ""
+            }
+            onChange={(e) => setTimeSlot(e.target.value)}
+            className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
+          />
+          <Clock className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// --- Sub-Component 2: Popover Dropdown Time Picker (Same API) ---
+export function CustomTimePicker({ timeSlot, setTimeSlot }: TimePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isCustom, setIsCustom] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -268,7 +238,7 @@ function CustomTimePicker({
       >
         <span className="flex items-center gap-2 truncate font-mono">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          {selectedSlot || "Select Time Window"}
+          {timeSlot || "Select Time Window"}
         </span>
         <ChevronDown
           className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
@@ -297,14 +267,14 @@ function CustomTimePicker({
             <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1 custom-scrollbar">
               {TIME_SLOTS.map((slot) => {
                 const Icon = slot.icon;
-                const isSelected = selectedSlot === slot.label;
+                const isSelected = timeSlot === slot.label;
 
                 return (
                   <button
                     key={slot.id}
                     type="button"
                     onClick={() => {
-                      onChangeSlot(slot.label);
+                      setTimeSlot(slot.label);
                       setIsOpen(false);
                     }}
                     className={`w-full flex items-center justify-between p-2 rounded-lg text-xs transition-all ${
@@ -346,8 +316,12 @@ function CustomTimePicker({
             <div className="pt-1">
               <input
                 type="time"
-                value={selectedSlot.includes(":") ? selectedSlot : ""}
-                onChange={(e) => onChangeSlot(e.target.value)}
+                value={
+                  timeSlot.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
+                    ? timeSlot
+                    : ""
+                }
+                onChange={(e) => setTimeSlot(e.target.value)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
               />
             </div>
@@ -531,11 +505,8 @@ export default function BookingWidget({
               />
             </div>
 
-            {/* Enhanced Popover Time Selector */}
-            <CustomTimePicker
-              selectedSlot={timeSlot}
-              onChangeSlot={setTimeSlot}
-            />
+            {/* Time Selector (Now accepts timeSlot & setTimeSlot identically) */}
+            <CustomTimePicker timeSlot={timeSlot} setTimeSlot={setTimeSlot} />
 
             {/* Problem Details */}
             <div>
