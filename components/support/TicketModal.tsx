@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { SupportTicketForm } from "@/types/support";
-import { X, Send, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { X, Send, AlertTriangle, Loader2 } from "lucide-react";
 
 interface Props {
   isOpen: boolean;
@@ -25,18 +25,51 @@ export const TicketModal: React.FC<Props> = ({
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage(null);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      onSubmitSuccess(
-        `Support Ticket submitted successfully! Ticket ID: TKT-${Math.floor(100000 + Math.random() * 900000)}`,
-      );
+    // Map "Emergency" priority to "High" to align with database schema constraints
+    const mappedPriority =
+      formData.priority === "Emergency" ? "High" : formData.priority;
+    const generatedTicketId = `TKT-${Math.floor(100000 + Math.random() * 900000)}`;
+
+    const payload = {
+      ticketId: generatedTicketId,
+      title: formData.subject,
+      category: formData.category,
+      userType: "Customer",
+      userName: formData.name,
+      userEmail: formData.email,
+      userPhone: "N/A",
+      priority: mappedPriority,
+      status: "Open",
+      assignedAdmin: "Unassigned",
+      description: formData.message,
+    };
+
+    try {
+      console.log("Submitting payload:", payload);
+      const response = await fetch("/api/tickets", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "Failed to submit support ticket.");
+      }
+
+      // Reset form on success
       setFormData({
         name: "",
         email: "",
@@ -45,13 +78,24 @@ export const TicketModal: React.FC<Props> = ({
         subject: "",
         message: "",
       });
+
+      onSubmitSuccess(
+        `Support Ticket submitted successfully! Ticket ID: ${result.data?.ticketId || generatedTicketId}`,
+      );
       onClose();
-    }, 1000);
+    } catch (err: any) {
+      setErrorMessage(
+        err.message || "An unexpected error occurred. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
       <div className="relative w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl">
+        {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
           <div>
             <h3 className="text-xl font-extrabold text-white">
@@ -62,13 +106,24 @@ export const TicketModal: React.FC<Props> = ({
             </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition-all"
+            disabled={isSubmitting}
+            className="p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition-all disabled:opacity-50"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
+        {/* API Error Notification */}
+        {errorMessage && (
+          <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center gap-2.5 text-xs text-red-400">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4 mt-5 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -78,12 +133,13 @@ export const TicketModal: React.FC<Props> = ({
               <input
                 required
                 type="text"
+                disabled={isSubmitting}
                 placeholder="John Doe"
                 value={formData.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-200 focus:outline-none focus:border-blue-500 disabled:opacity-50"
               />
             </div>
             <div>
@@ -93,12 +149,13 @@ export const TicketModal: React.FC<Props> = ({
               <input
                 required
                 type="email"
+                disabled={isSubmitting}
                 placeholder="user@example.com"
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-200 focus:outline-none focus:border-blue-500 disabled:opacity-50"
               />
             </div>
           </div>
@@ -109,11 +166,12 @@ export const TicketModal: React.FC<Props> = ({
                 Category
               </label>
               <select
+                disabled={isSubmitting}
                 value={formData.category}
                 onChange={(e) =>
                   setFormData({ ...formData, category: e.target.value })
                 }
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-300 focus:outline-none focus:border-blue-500 font-mono"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-300 focus:outline-none focus:border-blue-500 font-mono disabled:opacity-50"
               >
                 <option value="Bookings & Schedules">
                   Bookings & Schedules
@@ -129,11 +187,12 @@ export const TicketModal: React.FC<Props> = ({
                 Priority Level
               </label>
               <select
+                disabled={isSubmitting}
                 value={formData.priority}
                 onChange={(e) =>
                   setFormData({ ...formData, priority: e.target.value as any })
                 }
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-300 focus:outline-none focus:border-blue-500 font-mono"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-300 focus:outline-none focus:border-blue-500 font-mono disabled:opacity-50"
               >
                 <option value="Low">Low - General Query</option>
                 <option value="Medium">Medium - Normal Issue</option>
@@ -150,12 +209,13 @@ export const TicketModal: React.FC<Props> = ({
             <input
               required
               type="text"
+              disabled={isSubmitting}
               placeholder="Brief description of your issue"
               value={formData.subject}
               onChange={(e) =>
                 setFormData({ ...formData, subject: e.target.value })
               }
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-200 focus:outline-none focus:border-blue-500 disabled:opacity-50"
             />
           </div>
 
@@ -166,12 +226,13 @@ export const TicketModal: React.FC<Props> = ({
             <textarea
               required
               rows={4}
+              disabled={isSubmitting}
               placeholder="Provide all relevant details, request IDs, or context..."
               value={formData.message}
               onChange={(e) =>
                 setFormData({ ...formData, message: e.target.value })
               }
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-slate-200 focus:outline-none focus:border-blue-500 resize-none"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-slate-200 focus:outline-none focus:border-blue-500 resize-none disabled:opacity-50"
             />
           </div>
 
@@ -179,7 +240,8 @@ export const TicketModal: React.FC<Props> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold transition-all"
+              disabled={isSubmitting}
+              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold transition-all disabled:opacity-50"
             >
               Cancel
             </button>
@@ -189,7 +251,9 @@ export const TicketModal: React.FC<Props> = ({
               className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold flex items-center gap-2 shadow-lg transition-all disabled:opacity-50"
             >
               {isSubmitting ? (
-                "Submitting..."
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Submitting...
+                </>
               ) : (
                 <>
                   <Send className="w-3.5 h-3.5" /> Submit Ticket
