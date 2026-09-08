@@ -29,7 +29,7 @@ export default function LoginHeroShowcase({ mode }: LoginHeroShowcaseProps) {
             <Sparkles className="w-5 h-5 text-white" />
           </div>
           <span className="text-lg font-black tracking-tight text-white">
-            AUTOSERVE<span className="text-blue-500">.AI</span>
+            HomeAssist
           </span>
         </div>
 

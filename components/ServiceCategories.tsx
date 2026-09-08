@@ -581,14 +581,6 @@ export default function ServiceCategories({
         {/* Header Title & Filter Bar */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-mono font-bold uppercase tracking-widest">
-                BAUST CSE FEST 2026 Engine
-              </span>
-              <span className="text-xs text-slate-500 font-mono">
-                • 8 Service Domains
-              </span>
-            </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               Automated Home Care Catalog
             </h2>
@@ -950,7 +942,7 @@ export default function ServiceCategories({
 
             {/* Modal Bottom Guardrail Footer */}
             <div className="px-6 py-3 bg-slate-950 border-t border-slate-800/80 text-[10px] text-slate-500 flex items-center justify-between">
-              <span>AutoServe.AI Algorithmic Dispatch v2.4</span>
+              <span>HomeAssist Algorithmic Dispatch v2.4</span>
               <span>Double-Booking Prevention Lock Active</span>
             </div>
           </div>

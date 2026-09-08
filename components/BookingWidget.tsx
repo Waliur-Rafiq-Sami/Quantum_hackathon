@@ -1,133 +1,3 @@
-// import React, { useState } from "react";
-// import { Clock, Sunrise, Sun, Sunset, Moon, Check } from "lucide-react";
-
-// interface TimeSlotOption {
-//   id: string;
-//   label: string;
-//   period: "Morning" | "Afternoon" | "Evening";
-//   icon: React.ElementType;
-//   tag?: string;
-// }
-
-// const TIME_SLOTS: TimeSlotOption[] = [
-//   {
-//     id: "slot-1",
-//     label: "09:00 AM - 11:00 AM",
-//     period: "Morning",
-//     icon: Sunrise,
-//     tag: "Fastest",
-//   },
-//   { id: "slot-2", label: "11:00 AM - 01:00 PM", period: "Morning", icon: Sun },
-//   {
-//     id: "slot-3",
-//     label: "02:00 PM - 04:00 PM",
-//     period: "Afternoon",
-//     icon: Sun,
-//     tag: "Popular",
-//   },
-//   {
-//     id: "slot-4",
-//     label: "04:00 PM - 06:00 PM",
-//     period: "Evening",
-//     icon: Sunset,
-//   },
-//   { id: "slot-5", label: "06:00 PM - 08:00 PM", period: "Evening", icon: Moon },
-// ];
-
-// export default function PreferredTimePicker({
-//   timeSlot,
-//   setTimeSlot,
-// }: {
-//   timeSlot: string;
-//   setTimeSlot: (slot: string) => void;
-// }) {
-//   const [isCustom, setIsCustom] = useState(false);
-
-//   return (
-//     <div className="space-y-3">
-//       {/* Label and Mode Switcher */}
-//       <div className="flex items-center justify-between">
-//         <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5 font-mono">
-//           <Clock className="w-3.5 h-3.5 text-blue-400" />
-//           Preferred Arrival Window
-//         </label>
-//         <button
-//           type="button"
-//           onClick={() => setIsCustom(!isCustom)}
-//           className="text-[11px] text-blue-400 hover:text-blue-300 font-medium transition-colors"
-//         >
-//           {isCustom ? "Select standard slot" : "Set custom time"}
-//         </button>
-//       </div>
-
-//       {!isCustom ? (
-//         /* Preset Time Slot Grid */
-//         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-//           {TIME_SLOTS.map((slot) => {
-//             const Icon = slot.icon;
-//             const isSelected = timeSlot === slot.label;
-
-//             return (
-//               <button
-//                 key={slot.id}
-//                 type="button"
-//                 onClick={() => setTimeSlot(slot.label)}
-//                 className={`relative flex items-center justify-between p-2.5 rounded-xl border text-xs transition-all ${
-//                   isSelected
-//                     ? "bg-blue-950/60 border-blue-500 text-white shadow-sm shadow-blue-500/20 ring-1 ring-blue-500/40"
-//                     : "bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-900/60"
-//                 }`}
-//               >
-//                 <div className="flex items-center gap-2.5">
-//                   <div
-//                     className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-//                       isSelected
-//                         ? "bg-blue-500/20 text-blue-400"
-//                         : "bg-slate-900 text-slate-500"
-//                     }`}
-//                   >
-//                     <Icon className="w-3.5 h-3.5" />
-//                   </div>
-//                   <div className="text-left">
-//                     <span className="font-mono font-medium block leading-none">
-//                       {slot.label}
-//                     </span>
-//                     <span className="text-[10px] text-slate-500">
-//                       {slot.period}
-//                     </span>
-//                   </div>
-//                 </div>
-
-//                 <div className="flex items-center gap-1.5">
-//                   {slot.tag && !isSelected && (
-//                     <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
-//                       {slot.tag}
-//                     </span>
-//                   )}
-//                   {isSelected && (
-//                     <Check className="w-4 h-4 text-blue-400 stroke-[3]" />
-//                   )}
-//                 </div>
-//               </button>
-//             );
-//           })}
-//         </div>
-//       ) : (
-//         /* Native Time Input Fallback */
-//         <div className="relative">
-//           <input
-//             type="time"
-//             value={timeSlot}
-//             onChange={(e) => setTimeSlot(e.target.value)}
-//             className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
-//           />
-//           <Clock className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
-
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -147,6 +17,11 @@ import {
   Sunset,
   Moon,
   Sparkles,
+  User,
+  Phone,
+  Upload,
+  X,
+  Image as ImageIcon,
 } from "lucide-react";
 
 // --- Types ---
@@ -170,6 +45,9 @@ export interface ServiceRequest {
   timeSlot: string;
   urgency: "Normal" | "Urgent";
   problemDetails: string;
+  customerName: string;
+  contactPhone: string;
+  images: string[];
   provider: Provider;
   status: string;
   createdAt: string;
@@ -182,6 +60,11 @@ interface TimeSlotOption {
   icon: React.ElementType;
   tag?: string;
   available?: boolean;
+}
+
+interface BookingWidgetProps {
+  providers?: Provider[];
+  onConfirmBooking: (req: ServiceRequest) => void;
 }
 
 const TIME_SLOTS: TimeSlotOption[] = [
@@ -366,6 +249,8 @@ export default function BookingWidget({
   const [selectedService, setSelectedService] = useState(
     "Appliance & Gadget Repair",
   );
+  const [customerName, setCustomerName] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
   const [location, setLocation] = useState("Dhanmondi, Dhaka");
   const [date, setDate] = useState("2026-09-12");
   const [timeSlot, setTimeSlot] = useState("01:00 PM - 03:00 PM");
@@ -373,6 +258,7 @@ export default function BookingWidget({
   const [problemDetails, setProblemDetails] = useState(
     "AC unit blowing warm air, needs gas check.",
   );
+  const [images, setImages] = useState<string[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(true);
 
@@ -389,6 +275,19 @@ export default function BookingWidget({
       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
   };
 
+  // Image upload handler
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      const newImageUrls = filesArray.map((file) => URL.createObjectURL(file));
+      setImages((prev) => [...prev, ...newImageUrls]);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSearching(true);
@@ -403,11 +302,14 @@ export default function BookingWidget({
     const newReq: ServiceRequest = {
       id: `REQ-${Math.floor(1000 + Math.random() * 9000)}`,
       serviceName: selectedService,
+      customerName,
+      contactPhone,
       location,
       date,
       timeSlot,
       urgency,
       problemDetails,
+      images,
       provider: topProvider,
       status: "Requested",
       createdAt: new Date().toLocaleTimeString(),
@@ -443,7 +345,43 @@ export default function BookingWidget({
             onSubmit={handleSearch}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-6"
           >
-            {/* Service Field */}
+            {/* Contact Name Field */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5 text-blue-400" /> Full Name
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. John Doe"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                />
+                <User className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
+              </div>
+            </div>
+
+            {/* Phone Number Field */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5 text-blue-400" /> Phone Number
+              </label>
+              <div className="relative">
+                <input
+                  type="tel"
+                  required
+                  placeholder="+880 1700-000000"
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                  className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all font-mono"
+                />
+                <Phone className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
+              </div>
+            </div>
+
+            {/* Service Category Field */}
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
                 <Wrench className="w-3.5 h-3.5 text-blue-400" /> Category
@@ -531,14 +469,14 @@ export default function BookingWidget({
               />
             </div>
 
-            {/* Enhanced Popover Time Selector */}
+            {/* Popover Time Selector */}
             <CustomTimePicker
               selectedSlot={timeSlot}
               onChangeSlot={setTimeSlot}
             />
 
-            {/* Problem Details */}
-            <div>
+            {/* Problem Details Field */}
+            <div className="md:col-span-2">
               <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5 text-blue-400" /> Issue
                 Description
@@ -550,6 +488,54 @@ export default function BookingWidget({
                 className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 placeholder="Describe your issue..."
               />
+            </div>
+
+            {/* Multi-Image Upload Section (Optional) */}
+            <div className="md:col-span-2 lg:col-span-3">
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-blue-400" /> Attach
+                Photos of Problem{" "}
+                <span className="text-slate-500 font-normal">(Optional)</span>
+              </label>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+                {/* Upload Button */}
+                <label className="flex flex-col items-center justify-center h-20 border-2 border-dashed border-slate-800 hover:border-blue-500/50 hover:bg-blue-500/5 rounded-xl cursor-pointer transition-all text-slate-400 hover:text-blue-400">
+                  <Upload className="w-5 h-5 mb-1" />
+                  <span className="text-[10px] font-semibold">
+                    Upload Photos
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                </label>
+
+                {/* Image Previews */}
+                {images.map((imgSrc, idx) => (
+                  <div
+                    key={idx}
+                    className="relative group rounded-xl overflow-hidden border border-slate-700 bg-slate-950"
+                  >
+                    <img
+                      src={imgSrc}
+                      alt={`Issue preview ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(idx)}
+                      className="absolute top-1 right-1 p-1 bg-black/70 hover:bg-red-600 rounded-full text-white transition-colors"
+                      title="Remove image"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Submit Button */}

@@ -5,7 +5,7 @@ import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import BookingWidget from "../components/BookingWidget";
 import ServiceCategories from "../components/ServiceCategories";
-import AlgorithmTuner from "../components/AlgorithmTuner";
+
 import LiveTracking from "../components/LiveTracking";
 import ProviderDashboard from "../components/ProviderDashboard";
 import InvoiceModal from "../components/InvoiceModal";
@@ -71,9 +71,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-600 selection:text-white">
-      {/* Navbar without viewMode props */}
-      <Navbar />
-
       {viewMode === "customer" ? (
         <main>
           <Hero />
@@ -82,16 +79,16 @@ export default function HomePage() {
             onConfirmBooking={(req) => setActiveRequest(req)}
           />
           <ServiceCategories />
-          <AlgorithmTuner
+          {/* <AlgorithmTuner
             weights={weights}
             setWeights={setWeights}
             providers={scoredProviders}
-          />
-          <LiveTracking
+          /> */}
+          {/* <LiveTracking
             activeRequest={activeRequest}
             onUpdateStatus={handleUpdateStatus}
             onOpenInvoice={() => setShowInvoice(true)}
-          />
+          /> */}
         </main>
       ) : (
         <ProviderDashboard

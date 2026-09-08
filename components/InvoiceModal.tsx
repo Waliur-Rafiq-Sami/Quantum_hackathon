@@ -25,7 +25,7 @@ export default function InvoiceModal({ request, onClose }: InvoiceModalProps) {
         </div>
 
         <h3 className="text-xl font-bold text-white">
-          AutoServe Digital Receipt
+          HomeAssist Digital Receipt
         </h3>
         <p className="text-xs text-slate-400 font-mono">
           Invoice ID: INV-{request.id}

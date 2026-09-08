@@ -82,8 +82,7 @@ export default function LoginPage() {
 
           {/* Security Footer Note */}
           <div className="mt-8 pt-4 border-t border-slate-900 text-center text-[11px] text-slate-500">
-            Protected by end-to-end tokenized authentication. AutoServe.AI ©
-            2026
+            Protected by end-to-end tokenized authentication. HomeAssist © 2026
           </div>
         </div>
 

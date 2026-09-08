@@ -30,7 +30,7 @@ export default function SideHeroShowcase({ mode }: SideHeroShowcaseProps) {
             <Sparkles className="w-5 h-5 text-white" />
           </div>
           <span className="text-lg font-black tracking-tight text-white">
-            AUTOSERVE<span className="text-blue-500">.AI</span>
+            HomeAssist
           </span>
         </div>
 
@@ -56,7 +56,7 @@ export default function SideHeroShowcase({ mode }: SideHeroShowcaseProps) {
             </h2>
 
             <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">
-              Join over 15,000+ homeowners using AutoServe’s AI matching engine
+              Join over 15,000+ homeowners using HomeAssist’s AI matching engine
               to eliminate phone tag and lock in guaranteed transparent pricing.
             </p>
 

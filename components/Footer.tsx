@@ -15,11 +15,11 @@ export default function Footer({ viewMode, setViewMode }: FooterProps) {
         {/* Brand Information */}
         <div className="space-y-1 text-center sm:text-left">
           <div>
-            <span className="text-slate-300 font-bold">AUTOSERVE.AI</span> —
-            Autonomous Home Service Management System
+            <span className="text-slate-300 font-bold">HomeAssist</span> —
+            Automated home service platform
           </div>
           <div className="text-slate-500">
-            Autonomous Dispatch Engine • Zero Manual Steps
+            Instant booking • Trusted providers • Zero hassle
           </div>
         </div>
 
@@ -34,17 +34,6 @@ export default function Footer({ viewMode, setViewMode }: FooterProps) {
             }`}
           >
             <UserCheck className="w-3.5 h-3.5" /> Customer View
-          </button>
-
-          <button
-            onClick={() => setViewMode("provider")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
-              viewMode === "provider"
-                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <LayoutDashboard className="w-3.5 h-3.5" /> Provider Console
           </button>
         </div>
       </div>

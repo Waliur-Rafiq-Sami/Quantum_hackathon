@@ -11,7 +11,7 @@ export default function Hero() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center lg:text-left">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-950/80 border border-blue-800/60 text-blue-300 text-xs font-medium mb-6">
           <Zap className="w-3.5 h-3.5 text-blue-400 animate-bounce" />
-          Next-Generation Smart Home Automation System
+          HomeAssist — Automated home service platform
         </div>
 
         <div className="grid lg:grid-cols-12 gap-8 items-center">
@@ -24,7 +24,7 @@ export default function Hero() {
             </h1>
 
             <p className="text-slate-400 text-base sm:text-lg max-w-2xl font-normal leading-relaxed">
-              AutoServe eliminates back-and-forth phone tag. Our multi-variable
+              HomeAssist eliminates back-and-forth phone tag. Our multi-variable
               algorithm pairs you with verified nearby technicians in under 3
               seconds based on distance, live schedule windows, fixed pricing,
               and expertise score.
@@ -36,12 +36,6 @@ export default function Hero() {
                 className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold transition-all shadow-lg shadow-blue-600/25 flex items-center gap-2 text-sm"
               >
                 Simulate Instant Request <ArrowRight className="w-4 h-4" />
-              </a>
-              <a
-                href="#algorithm-tuner"
-                className="px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 font-semibold transition-all text-sm"
-              >
-                Test Match Scoring Algorithm
               </a>
             </div>
 

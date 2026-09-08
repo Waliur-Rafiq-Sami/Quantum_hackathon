@@ -91,7 +91,7 @@ export default function SignupPage() {
 
           {/* Footer Copyright */}
           <div className="mt-8 pt-4 border-t border-slate-900 text-center text-[11px] text-slate-500">
-            Protected by 256-bit SSL encryption. AutoServe.AI © 2026
+            Protected by 256-bit SSL encryption. HomeAssist © 2026
           </div>
         </div>
 
