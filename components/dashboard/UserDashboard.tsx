@@ -122,9 +122,7 @@ export default function UserDashboard() {
             <div>
               <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
                 Customer Dashboard
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 font-mono">
-                  BAUST CSE FEST 2026
-                </span>
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 font-mono"></span>
               </h1>
               <p className="text-xs text-slate-400">
                 Manage your home services, track real-time technicians & view
