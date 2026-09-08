@@ -79,7 +79,7 @@ export default function SignupPage() {
             </div>
 
             {/* Social Logins */}
-            <SocialAuthButtons />
+            {/* <SocialAuthButtons /> */}
 
             {/* Dynamic Form Render */}
             {accountType === "customer" ? (
